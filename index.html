@@ -1,69 +1,6 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buscar Aluno</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f4f4f4;
-        }
-        .search-container {
-            text-align: center;
-            background: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-        }
-        h2 {
-            margin-bottom: 20px;
-        }
-        input[type="text"] {
-            padding: 12px;
-            font-size: 16px;
-            width: 80%;
-            max-width: 400px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        button {
-            padding: 12px 24px;
-            font-size: 16px;
-            margin-top: 15px;
-            cursor: pointer;
-            border: none;
-            background-color: #007BFF;
-            color: white;
-            border-radius: 4px;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .result {
-            margin-top: 25px;
-            font-size: 18px;
-            color: #333;
-        }
-    </style>
-</head>
-<body>
-    <div class="search-container">
-        <h2>Digite o ID do aluno</h2>
-        <input type="text" id="searchInput" placeholder="ID do aluno">
-        <br>
-        <button onclick="search()">Buscar</button>
-        <div id="result" class="result"></div>
-    </div>
-
-    <script>
-        // Mapeamento dos nomes das abas para seus respectivos GIDs
-        const sheetGIDs = {
+<script>
+    // Mapeamento dos nomes das abas para seus respectivos GIDs
+    const sheetGIDs = {
             "1": "0",
             "2": "2037841459",
             "3": "1695806217",
@@ -81,97 +18,111 @@
             "15": "1654549378",
             "16": "15592790",
             "17": "2025923020"
-        };
+    };
 
-        const sheetNames = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17"];
+    const sheetNames = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17"];
 
-        // Função para obter a URL CSV de uma aba específica
-        function getCSVUrl(sheetName) {
-            const gid = sheetGIDs[sheetName];
-            return `https://docs.google.com/spreadsheets/d/e/2PACX-1vSlPFcI7A1iByFxLTsjYsqKWFR0EQ42meF5kBTLuyeuMn5zU3HzsDTllSN8-W7TgsBvBd1xjUY2Od6Q/pub?output=csv&gid=${gid}`;
+    // Função para obter a URL CSV de uma aba específica
+    function getCSVUrl(sheetName) {
+        const gid = sheetGIDs[sheetName];
+        return `https://docs.google.com/spreadsheets/d/e/2PACX-1vSlPFcI7A1iByFxLTsjYsqKWFR0EQ42meF5kBTLuyeuMn5zU3HzsDTllSN8-W7TgsBvBd1xjUY2Od6Q/pub?output=csv&gid=${gid}`;
+    }
+
+    // Função para parsear CSV de forma otimizada
+    function parseCSV(csv) {
+        const lines = csv.split('\n');
+        return lines.map(line => {
+            // Regex ajustado para lidar melhor com campos com aspas e espaços
+            const regex = /(?:\"([^\"]*)\")|([^,]+)/g;
+            const matches = [];
+            let match;
+            while ((match = regex.exec(line)) !== null) {
+                let value = match[1] || match[2];
+                if (value) {
+                    value = value.trim(); // Remove os espaços em branco nas extremidades
+                }
+                matches.push(value);
+            }
+            return matches;
+        });
+    }
+
+    // Função para buscar o ID do aluno
+    async function search() {
+        const input = document.getElementById('searchInput').value.trim();
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = 'Buscando...';
+
+        if (input === "") {
+            resultDiv.innerHTML = 'Por favor, insira um ID válido.';
+            return;
         }
 
-        // Função para parsear CSV de forma otimizada
-        function parseCSV(csv) {
-			const lines = csv.split('\n');
-			return lines.map(line => {
-				// Regex ajustado para lidar melhor com campos com aspas e espaços
-				const regex = /(?:\"([^\"]*)\")|([^,]+)/g;
-				const matches = [];
-				let match;
-				while ((match = regex.exec(line)) !== null) {
-					// Se encontrar aspas, usa o grupo 1, caso contrário, o grupo 2
-					let value = match[1] || match[2];
-					if (value) {
-						value = value.trim(); // Remove os espaços em branco nas extremidades
-				}
-				matches.push(value);
-			}
-			return matches;
-		});
-	}
+        let found = false;
 
+        // Cria um array de Promises para buscar todas as abas em paralelo
+        const fetchPromises = sheetNames.map(sheetName => {
+            const csvUrl = getCSVUrl(sheetName);
+            return fetch(csvUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Erro ao buscar a aba ${sheetName}: ${response.statusText}`);
+                    }
+                    return response.text();
+                })
+                .then(csvText => {
+                    const rows = parseCSV(csvText);
 
-        // Função para buscar o ID do aluno
-        async function search() {
-            const input = document.getElementById('searchInput').value.trim();
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = 'Buscando...';
+                    // Curso (coluna L1), que está fixo na primeira linha, coluna L (index 11)
+                    const curso = rows[0][11].trim(); 
 
-            if (input === "") {
-                resultDiv.innerHTML = 'Por favor, insira um ID válido.';
-                return;
-            }
+                    // Ignora o cabeçalho (primeira linha)
+                    for (let i = 1; i < rows.length; i++) {
+                        const row = rows[i];
 
-            let found = false;
+                        // Verifica se a coluna H (index 7) corresponde ao input
+                        if (row[7] && row[7].trim() === input) {
+                            // Nome do aluno (coluna G, index 6)
+                            const nome = row[6] ? row[6].trim() : '';
+                            // Ausências (coluna I, index 8)
+                            const ausencias = row[8] ? row[8].trim() : 'N/A';
 
-            // Cria um array de Promises para buscar todas as abas em paralelo
-            const fetchPromises = sheetNames.map(sheetName => {
-                const csvUrl = getCSVUrl(sheetName);
-                return fetch(csvUrl)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`Erro ao buscar a aba ${sheetName}: ${response.statusText}`);
-                        }
-                        return response.text();
-                    })
-                    .then(csvText => {
-                        const rows = parseCSV(csvText);
-                        // Ignora o cabeçalho (primeira linha)
-                        for (let i = 1; i < rows.length; i++) {
-                            const row = rows[i];
-                            // Verifica se a coluna H (index 7) corresponde ao input
-                            if (row[7] && row[7].trim() === input) {
-                                // Obtém a coluna G (index 6)
-                                const nome = row[6] ? row[6].trim() : '';
-                                if (nome !== "") {
-                                    resultDiv.innerHTML = `Nome do aluno: ${nome}`;
-                                    found = true;
-                                    // Abortamos todas as outras buscas
-                                    throw new Error('Aluno encontrado');
-                                }
+                            if (nome !== "") {
+                                // Data e hora da consulta
+                                const dataConsulta = new Date().toLocaleString();
+
+                                // Exibe as informações formatadas
+                                resultDiv.innerHTML = `
+                                    <p>Nome do Aluno: ${nome}</p>
+                                    <p>Curso: ${curso}</p>
+                                    <p>Total de ausências: ${ausencias}</p>
+                                    <p>Data da consulta: ${dataConsulta}</p>
+                                `;
+
+                                found = true;
+                                // Abortamos todas as outras buscas
+                                throw new Error('Aluno encontrado');
                             }
                         }
-                    })
-                    .catch(error => {
-                        if (error.message !== 'Aluno encontrado') {
-                            console.error(`Erro ao processar a aba ${sheetName}:`, error);
-                        }
-                    });
-            });
+                    }
+                })
+                .catch(error => {
+                    if (error.message !== 'Aluno encontrado') {
+                        console.error(`Erro ao processar a aba ${sheetName}:`, error);
+                    }
+                });
+        });
 
-            try {
-                await Promise.all(fetchPromises);
-            } catch (error) {
-                if (error.message !== 'Aluno encontrado') {
-                    console.error('Erro geral durante a busca:', error);
-                }
-            }
-
-            if (!found) {
-                resultDiv.innerHTML = 'Nenhum aluno encontrado.';
+        try {
+            await Promise.all(fetchPromises);
+        } catch (error) {
+            if (error.message !== 'Aluno encontrado') {
+                console.error('Erro geral durante a busca:', error);
             }
         }
-    </script>
-</body>
-</html>
+
+        if (!found) {
+            resultDiv.innerHTML = 'Nenhum aluno encontrado.';
+        }
+    }
+</script>
