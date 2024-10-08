@@ -136,9 +136,6 @@
                     .then(csvText => {
                         const rows = parseCSV(csvText);
 
-                        // Curso (coluna L1), que está fixo na primeira linha, coluna L (index 9)
-                        const curso = rows[0] && rows[0][9] ? rows[0][9].trim() : 'Curso não especificado'; 
-
                         // Ignora o cabeçalho (primeira linha)
                         for (let i = 1; i < rows.length; i++) {
                             const row = rows[i];
@@ -147,6 +144,8 @@
                             if (row && row[7] && row[7].trim() === input) {
                                 // Nome do aluno (coluna G, index 6)
                                 const nome = row[6] ? row[6].trim() : 'Nome não encontrado';
+                                // Curso do aluno (coluna J, index 9)
+                                const curso = row[9] ? row[9].trim() : 'Curso não encontrado';
                                 // Ausências (coluna I, index 8) emparelhado com o aluno
                                 const ausencias = row[8] ? row[8].trim() : 'N/A';
 
