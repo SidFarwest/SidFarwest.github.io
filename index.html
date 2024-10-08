@@ -91,17 +91,17 @@
             return `https://docs.google.com/spreadsheets/d/e/2PACX-1vSlPFcI7A1iByFxLTsjYsqKWFR0EQ42meF5kBTLuyeuMn5zU3HzsDTllSN8-W7TgsBvBd1xjUY2Od6Q/pub?output=csv&gid=${gid}`;
         }
 
-        // Função para parsear CSV
+        // Função para parsear CSV de forma otimizada
         function parseCSV(csv) {
             const lines = csv.split('\n');
             return lines.map(line => {
-                // Considera que as células podem conter vírgulas dentro de aspas
-                const regex = /(".*?"|[^",\s]+)(?=\s*,|\s*$)/g;
+                // Regex que respeita aspas e lida corretamente com vírgulas dentro de campos
+                const regex = /("(?:[^"]|"")*"|[^",\s]+)(?=\s*,|\s*$)/g;
                 const matches = [];
                 let match;
                 while ((match = regex.exec(line)) !== null) {
-                    // Remove as aspas se existirem
-                    let value = match[1];
+                    // Remove as aspas e normaliza os valores
+                    let value = match[1].replace(/""/g, '"');  // Substitui aspas duplas dentro de campos
                     if (value.startsWith('"') && value.endsWith('"')) {
                         value = value.slice(1, -1);
                     }
