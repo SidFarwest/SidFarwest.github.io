@@ -112,86 +112,82 @@
 
         // Função para buscar o ID do aluno
         async function search() {
-			const input = document.getElementById('searchInput').value.trim();
-			const resultDiv = document.getElementById('result');
-			resultDiv.innerHTML = 'Buscando...';
+            const input = document.getElementById('searchInput').value.trim();
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Buscando...';
 
-			if (input === "") {
-				resultDiv.innerHTML = 'Por favor, insira um ID válido.';
-				return;
-		}
+            if (input === "") {
+                resultDiv.innerHTML = 'Por favor, insira um ID válido.';
+                return;
+            }
 
             let found = false;
 
-    // Cria um array de Promises para buscar todas as abas em paralelo
-    const fetchPromises = sheetNames.map(sheetName => {
-        const csvUrl = getCSVUrl(sheetName);
-        return fetch(csvUrl)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Erro ao buscar a aba ${sheetName}: ${response.statusText}`);
-                }
-                return response.text();
-            })
-            .then(csvText => {
-                const rows = parseCSV(csvText);
-
-                // Log da primeira linha para verificar se os dados estão sendo carregados corretamente
-                console.log(`Aba ${sheetName} - Primeira linha:`, rows[0]);
-
-                // Tratamento das colunas vazias e obtenção do "Curso" da coluna L (index 11)
-                // Se houver colunas vazias antes, ajustar o índice (possivelmente 13)
-                const curso = rows[0] && rows[0][11] ? rows[0][11].trim() : 'Curso não especificado';
-
-                // Ignora o cabeçalho (primeira linha)
-                for (let i = 1; i < rows.length; i++) {
-                    const row = rows[i];
-
-                    // Verifica se a coluna H (index 7) corresponde ao input e verifica se ela existe
-                    if (row && row[7] && row[7].trim() === input) {
-                        // Nome do aluno (coluna G, index 6)
-                        const nome = row[6] ? row[6].trim() : 'Nome não encontrado';
-                        // Ausências (coluna I, index 8) emparelhado com o aluno
-                        const ausencias = row[8] ? row[8].trim() : 'N/A';
-
-                        if (nome !== "") {
-                            // Data e hora da consulta
-                            const dataConsulta = new Date().toLocaleString();
-
-                            // Exibe as informações formatadas
-                            resultDiv.innerHTML = `
-                                <p>Nome do Aluno: ${nome}</p>
-                                <p>Curso: ${curso}</p>
-                                <p>Total de ausências: ${ausencias}</p>
-                                <p>Data da consulta: ${dataConsulta}</p>
-                            `;
-
-                            found = true;
-                            // Abortamos todas as outras buscas
-                            throw new Error('Aluno encontrado');
+            // Cria um array de Promises para buscar todas as abas em paralelo
+            const fetchPromises = sheetNames.map(sheetName => {
+                const csvUrl = getCSVUrl(sheetName);
+                return fetch(csvUrl)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Erro ao buscar a aba ${sheetName}: ${response.statusText}`);
                         }
-                    }
-                }
-            })
-            .catch(error => {
-                if (error.message !== 'Aluno encontrado') {
-                    console.error(`Erro ao processar a aba ${sheetName}:`, error);
-                }
+                        return response.text();
+                    })
+                    .then(csvText => {
+                        const rows = parseCSV(csvText);
+
+                        // Curso (coluna L1), que está fixo na primeira linha, coluna L (index 9)
+                        const curso = rows[0] && rows[0][9] ? rows[0][9].trim() : 'Curso não especificado'; 
+
+                        // Ignora o cabeçalho (primeira linha)
+                        for (let i = 1; i < rows.length; i++) {
+                            const row = rows[i];
+
+                            // Verifica se a coluna H (index 7) corresponde ao input e verifica se ela existe
+                            if (row && row[7] && row[7].trim() === input) {
+                                // Nome do aluno (coluna G, index 6)
+                                const nome = row[6] ? row[6].trim() : 'Nome não encontrado';
+                                // Ausências (coluna I, index 8) emparelhado com o aluno
+                                const ausencias = row[8] ? row[8].trim() : 'N/A';
+
+                                if (nome !== "") {
+                                    // Data e hora da consulta
+                                    const dataConsulta = new Date().toLocaleString();
+
+                                    // Exibe as informações formatadas
+                                    resultDiv.innerHTML = `
+                                        <p>Nome do Aluno: ${nome}</p>
+                                        <p>Curso: ${curso}</p>
+                                        <p>Total de ausências: ${ausencias}</p>
+                                        <p>Data da consulta: ${dataConsulta}</p>
+                                    `;
+
+                                    found = true;
+                                    // Abortamos todas as outras buscas
+                                    throw new Error('Aluno encontrado');
+                                }
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        if (error.message !== 'Aluno encontrado') {
+                            console.error(`Erro ao processar a aba ${sheetName}:`, error);
+                        }
+                    });
             });
-    });
 
-    try {
-        await Promise.all(fetchPromises);
-    } catch (error) {
-        if (error.message !== 'Aluno encontrado') {
-            console.error('Erro geral durante a busca:', error);
+            try {
+                await Promise.all(fetchPromises);
+            } catch (error) {
+                if (error.message !== 'Aluno encontrado') {
+                    console.error('Erro geral durante a busca:', error);
+                }
+            }
+
+            if (!found) {
+                resultDiv.innerHTML = 'Nenhum aluno encontrado.';
+            }
         }
-    }
-
-    if (!found) {
-        resultDiv.innerHTML = 'Nenhum aluno encontrado.';
-    }
-}
     </script>
 </body>
 </html>
