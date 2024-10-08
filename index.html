@@ -33,16 +33,15 @@
             align-items: center;
         }
         .music-controls button {
-            padding: 8px 12px;
-            font-size: 14px;
+            padding: 8px;
+            font-size: 18px;
             cursor: pointer;
             border: none;
-            background-color: #007BFF;
-            color: white;
-            border-radius: 4px;
+            background-color: transparent;
+            color: #007BFF;
         }
         .music-controls button:hover {
-            background-color: #0056b3;
+            color: #0056b3;
         }
         .music-controls input[type="range"] {
             width: 150px;
@@ -87,8 +86,7 @@
 </head>
 <body>
     <div class="music-controls">
-        <button onclick="playMusic()">Play</button>
-        <button onclick="pauseMusic()">Pause</button>
+        <button id="playPauseBtn" onclick="togglePlayPause()">⏸</button>
         <label for="volumeControl">Volume:</label>
         <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="0.5" onchange="changeVolume()">
     </div>
@@ -101,20 +99,24 @@
         <div id="result" class="result"></div>
     </div>
 
-    <audio id="backgroundMusic" loop>
+    <audio id="backgroundMusic" autoplay loop>
         <source src="https://r2.fivemanage.com/cmOhkmL5mVUDmYqeL5aUp/Snoop_Dogg_&_The_Doors_-_Riders_On_The_Storm.mp3" type="audio/mpeg">
         Seu navegador não suporta a reprodução de áudio.
     </audio>
 
     <script>
         const backgroundMusic = document.getElementById('backgroundMusic');
+        const playPauseBtn = document.getElementById('playPauseBtn');
 
-        function playMusic() {
-            backgroundMusic.play();
-        }
-
-        function pauseMusic() {
-            backgroundMusic.pause();
+        // Função para alternar entre play e pause
+        function togglePlayPause() {
+            if (backgroundMusic.paused) {
+                backgroundMusic.play();
+                playPauseBtn.innerHTML = '⏸';  // Símbolo de pausa
+            } else {
+                backgroundMusic.pause();
+                playPauseBtn.innerHTML = '▶';  // Símbolo de play
+            }
         }
 
         function changeVolume() {
