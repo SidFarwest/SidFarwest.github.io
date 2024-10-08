@@ -137,7 +137,7 @@
                         const rows = parseCSV(csvText);
 
                         // Curso (coluna L1), que está fixo na primeira linha, coluna L (index 11)
-                        const curso = rows[0][11].trim(); 
+                        const curso = rows[0][11] ? rows[0][11].trim() : 'Curso não especificado'; 
 
                         // Ignora o cabeçalho (primeira linha)
                         for (let i = 1; i < rows.length; i++) {
@@ -146,7 +146,7 @@
                             // Verifica se a coluna H (index 7) corresponde ao input
                             if (row[7] && row[7].trim() === input) {
                                 // Nome do aluno (coluna G, index 6)
-                                const nome = row[6] ? row[6].trim() : '';
+                                const nome = row[6] ? row[6].trim() : 'Nome não encontrado';
                                 // Ausências (coluna I, index 8)
                                 const ausencias = row[8] ? row[8].trim() : 'N/A';
 
@@ -180,14 +180,4 @@
                 await Promise.all(fetchPromises);
             } catch (error) {
                 if (error.message !== 'Aluno encontrado') {
-                    console.error('Erro geral durante a busca:', error);
-                }
-            }
-
-            if (!found) {
-                resultDiv.innerHTML = 'Nenhum aluno encontrado.';
-            }
-        }
-    </script>
-</body>
-</html>
+                    console.error('
