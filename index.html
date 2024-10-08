@@ -5,18 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buscar Aluno</title>
     <style>
-            body {
-        font-family: Arial, sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-        background-image: url('https://r2.fivemanage.com/cmOhkmL5mVUDmYqeL5aUp/images/MAISLEGAL.jpg');
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-image: url('https://r2.fivemanage.com/cmOhkmL5mVUDmYqeL5aUp/images/MAISLEGAL.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            flex-direction: column;
+        }
+        .music-controls {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .music-controls button {
+            padding: 8px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            background-color: #007BFF;
+            color: white;
+            border-radius: 4px;
+        }
+        .music-controls button:hover {
+            background-color: #0056b3;
+        }
+        .music-controls input[type="range"] {
+            width: 150px;
         }
         .search-container {
             text-align: center;
@@ -57,6 +86,13 @@
     </style>
 </head>
 <body>
+    <div class="music-controls">
+        <button onclick="playMusic()">Play</button>
+        <button onclick="pauseMusic()">Pause</button>
+        <label for="volumeControl">Volume:</label>
+        <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="0.5" onchange="changeVolume()">
+    </div>
+
     <div class="search-container">
         <h2>Digite o ID do aluno</h2>
         <input type="text" id="searchInput" placeholder="ID do aluno">
@@ -65,7 +101,27 @@
         <div id="result" class="result"></div>
     </div>
 
+    <audio id="backgroundMusic" loop>
+        <source src="https://r2.fivemanage.com/cmOhkmL5mVUDmYqeL5aUp/Snoop_Dogg_&_The_Doors_-_Riders_On_The_Storm.mp3" type="audio/mpeg">
+        Seu navegador não suporta a reprodução de áudio.
+    </audio>
+
     <script>
+        const backgroundMusic = document.getElementById('backgroundMusic');
+
+        function playMusic() {
+            backgroundMusic.play();
+        }
+
+        function pauseMusic() {
+            backgroundMusic.pause();
+        }
+
+        function changeVolume() {
+            const volumeControl = document.getElementById('volumeControl');
+            backgroundMusic.volume = volumeControl.value;
+        }
+
         // Mapeamento dos nomes das abas para seus respectivos GIDs
         const sheetGIDs = {
             "1": "0",
@@ -99,14 +155,13 @@
         function parseCSV(csv) {
             const lines = csv.split('\n');
             return lines.map(line => {
-                // Regex ajustado para lidar melhor com campos com aspas e espaços
                 const regex = /(?:\"([^\"]*)\")|([^,]+)/g;
                 const matches = [];
                 let match;
                 while ((match = regex.exec(line)) !== null) {
                     let value = match[1] || match[2];
                     if (value) {
-                        value = value.trim(); // Remove os espaços em branco nas extremidades
+                        value = value.trim();
                     }
                     matches.push(value);
                 }
@@ -127,7 +182,6 @@
 
             let found = false;
 
-            // Cria um array de Promises para buscar todas as abas em paralelo
             const fetchPromises = sheetNames.map(sheetName => {
                 const csvUrl = getCSVUrl(sheetName);
                 return fetch(csvUrl)
@@ -140,24 +194,17 @@
                     .then(csvText => {
                         const rows = parseCSV(csvText);
 
-                        // Ignora o cabeçalho (primeira linha)
                         for (let i = 1; i < rows.length; i++) {
                             const row = rows[i];
 
-                            // Verifica se a coluna H (index 7) corresponde ao input e verifica se ela existe
                             if (row && row[7] && row[7].trim() === input) {
-                                // Nome do aluno (coluna G, index 6)
                                 const nome = row[6] ? row[6].trim() : 'Nome não encontrado';
-                                // Curso do aluno (coluna J, index 9)
                                 const curso = row[9] ? row[9].trim() : 'Curso não encontrado';
-                                // Ausências (coluna I, index 8) emparelhado com o aluno
                                 const ausencias = row[8] ? row[8].trim() : 'N/A';
 
                                 if (nome !== "") {
-                                    // Data e hora da consulta
                                     const dataConsulta = new Date().toLocaleString();
 
-                                    // Exibe as informações formatadas
                                     resultDiv.innerHTML = `
                                         <p>Nome do Aluno: ${nome}</p>
                                         <p>Curso: ${curso}</p>
@@ -166,7 +213,6 @@
                                     `;
 
                                     found = true;
-                                    // Abortamos todas as outras buscas
                                     throw new Error('Aluno encontrado');
                                 }
                             }
