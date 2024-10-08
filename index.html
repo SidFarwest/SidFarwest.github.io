@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscar Aluno</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        .search-container {
+            text-align: center;
+        }
+        input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            width: 300px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tabletop.js/1.5.2/tabletop.min.js"></script>
+</head>
+<body>
+    <div class="search-container">
+        <h2>Digite o ID do aluno</h2>
+        <input type="text" id="searchInput" placeholder="ID do aluno">
+        <button onclick="search()">Buscar</button>
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        var publicSpreadsheetUrl = 'https://docs.google.com/spreadsheets/u/2/d/e/2PACX-1vSlPFcI7A1iByFxLTsjYsqKWFR0EQ42meF5kBTLuyeuMn5zU3HzsDTllSN8-W7TgsBvBd1xjUY2Od6Q/pubhtml';
+
+        // Nomes das abas onde a busca será realizada
+        var sheetNames = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17"];
+
+        function search() {
+            var input = document.getElementById('searchInput').value.trim();
+            var resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Buscando...';
+            
+            // Variável para controlar se algum resultado foi encontrado
+            var found = false;
+
+            // Percorre todas as abas definidas em sheetNames
+            sheetNames.forEach(function(sheetName) {
+                Tabletop.init({
+                    key: publicSpreadsheetUrl,
+                    simpleSheet: false,
+                    wanted: [sheetName],
+                    callback: function(data, tabletop) {
+                        var sheetData = data[sheetName].elements;
+
+                        // Procura na coluna H (index 7) por um valor que corresponda ao input do usuário
+                        for (var i = 0; i < sheetData.length; i++) {
+                            if (sheetData[i]['H'] === input) {
+                                // Se o valor for encontrado, exibe o conteúdo da coluna G (index 6)
+                                resultDiv.innerHTML = 'Nome do aluno: ' + sheetData[i]['G'];
+                                found = true;
+                                return;
+                            }
+                        }
+
+                        // Se todas as abas foram verificadas e nada foi encontrado
+                        if (!found && sheetName === sheetNames[sheetNames.length - 1]) {
+                            resultDiv.innerHTML = 'Nenhum aluno encontrado.';
+                        }
+                    },
+                    error: function(err) {
+                        resultDiv.innerHTML = 'Erro ao acessar a planilha.';
+                        console.error(err);
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>
