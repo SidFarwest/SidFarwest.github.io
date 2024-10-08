@@ -12,12 +12,19 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-image: url('https://r2.fivemanage.com/cmOhkmL5mVUDmYqeL5aUp/images/MAISLEGAL.jpg');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
+            overflow: hidden; /* Para evitar barras de rolagem */
             flex-direction: column;
+        }
+
+        /* Estilo para o vídeo de fundo */
+        .background-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            min-width: 100%;
+            min-height: 100%;
+            z-index: -1;
+            object-fit: cover;
         }
         .music-controls {
             position: fixed;
@@ -86,6 +93,13 @@
     </style>
 </head>
 <body>
+
+    <!-- Vídeo de fundo -->
+    <video autoplay muted loop class="background-video">
+        <source src="https://r2.fivemanage.com/cmOhkmL5mVUDmYqeL5aUp/BGM.mp4" type="video/mp4">
+        Seu navegador não suporta a reprodução de vídeo.
+    </video>
+    
     <div class="music-controls">
         <button onclick="playMusic()">Play</button>
         <button onclick="pauseMusic()">Pause</button>
