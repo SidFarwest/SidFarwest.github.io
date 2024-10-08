@@ -93,23 +93,24 @@
 
         // Função para parsear CSV de forma otimizada
         function parseCSV(csv) {
-            const lines = csv.split('\n');
-            return lines.map(line => {
-                // Regex que respeita aspas e lida corretamente com vírgulas dentro de campos
-                const regex = /("(?:[^"]|"")*"|[^",\s]+)(?=\s*,|\s*$)/g;
-                const matches = [];
-                let match;
-                while ((match = regex.exec(line)) !== null) {
-                    // Remove as aspas e normaliza os valores
-                    let value = match[1].replace(/""/g, '"');  // Substitui aspas duplas dentro de campos
-                    if (value.startsWith('"') && value.endsWith('"')) {
-                        value = value.slice(1, -1);
-                    }
-                    matches.push(value);
-                }
-                return matches;
-            });
-        }
+			const lines = csv.split('\n');
+			return lines.map(line => {
+				// Regex ajustado para lidar melhor com campos com aspas e espaços
+				const regex = /(?:\"([^\"]*)\")|([^,]+)/g;
+				const matches = [];
+				let match;
+				while ((match = regex.exec(line)) !== null) {
+					// Se encontrar aspas, usa o grupo 1, caso contrário, o grupo 2
+					let value = match[1] || match[2];
+					if (value) {
+						value = value.trim(); // Remove os espaços em branco nas extremidades
+				}
+				matches.push(value);
+			}
+			return matches;
+		});
+	}
+
 
         // Função para buscar o ID do aluno
         async function search() {
