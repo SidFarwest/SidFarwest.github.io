@@ -1,4 +1,67 @@
-<script>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscar Aluno</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        .search-container {
+            text-align: center;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        }
+        h2 {
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            padding: 12px;
+            font-size: 16px;
+            width: 80%;
+            max-width: 400px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            margin-top: 15px;
+            cursor: pointer;
+            border: none;
+            background-color: #007BFF;
+            color: white;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 25px;
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="search-container">
+        <h2>Digite o ID do aluno</h2>
+        <input type="text" id="searchInput" placeholder="ID do aluno">
+        <br>
+        <button onclick="search()">Buscar</button>
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
     // Mapeamento dos nomes das abas para seus respectivos GIDs
     const sheetGIDs = {
             "1": "0",
